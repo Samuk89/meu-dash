@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Médico - João da Silva</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .dashboard {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4CAF50, #66BB6A);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(76, 175, 80, 0.3);
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.12);
+        }
+
+        .card-title {
+            font-size: 1.4rem;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card-icon {
+            width: 24px;
+            height: 24px;
+            background: linear-gradient(135deg, #4CAF50, #2E7D32);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+        }
+
+        .info-item {
+            margin-bottom: 15px;
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #4CAF50;
+        }
+
+        .info-label {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+
+        .info-value {
+            color: #555;
+            line-height: 1.5;
+        }
+
+        .medication-list {
+            list-style: none;
+        }
+
+        .medication-item {
+            background: #e3f2fd;
+            padding: 12px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            border-left: 4px solid #2196F3;
+        }
+
+        .medication-name {
+            font-weight: 600;
+            color: #1976d2;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-top: 5px;
+        }
+
+        .status-good {
+            background: #e8f5e8;
+            color: #2e7d32;
+        }
+
+        .status-attention {
+            background: #fff3e0;
+            color: #f57c00;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin-top: 20px;
+        }
+
+        .suggestions {
+            background: linear-gradient(135deg, #ffeaa7, #fab1a0);
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .suggestion-item {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 12px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            border-left: 4px solid #e17055;
+        }
+
+        .team-member {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 12px;
+            background: #f1f3f4;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        .team-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+        }
+
+        .team-info h4 {
+            margin-bottom: 3px;
+            color: #2c3e50;
+        }
+
+        .team-info p {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .full-width {
+            grid-column: 1 / -1;
+        }
+
+        .alert {
+            background: linear-gradient(135deg, #ff9a9e, #fecfef);
+            color: #721c24;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border-left: 4px solid #dc3545;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <div class="header">
+            <h1>Dashboard Médico</h1>
+            <p>Paciente: João da Silva | Ala: Internação Aguda – Bloco B</p>
+        </div>
+
+        <div class="alert">
+            <strong>⚠️ Atenção:</strong> Paciente com histórico de tentativas de suicídio. Monitoramento contínuo necessário.
+        </div>
+
+        <div class="grid">
+            <!-- Informações Gerais -->
+            <div class="card">
+                <div class="card-title">
+                    <div class="card-icon">👤</div>
+                    Perfil do Paciente
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Nome Completo</div>
+                    <div class="info-value">João da Silva</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Localização</div>
+                    <div class="info-value">Internação Aguda – Bloco B</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Data de Internação</div>
+                    <div class="info-value">15/05/2025</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Previsão de Alta</div>
+                    <div class="info-value">15/06/2025 (12 dias)</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 60%;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Diagnóstico -->
+            <div class="card">
+                <div class="card-title">
+                    <div class="card-icon">🏥</div>
+                    Diagnóstico Principal
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Condição</div>
+                    <div class="info-value">Transtorno Afetivo Bipolar – Episódio atual depressivo grave, sem sintomas psicóticos</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">CID-10</div>
+                    <div class="info-value">F31.4</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Internações Anteriores</div>
+                    <div class="info-value">2 internações (2022 e 2023) por episódios maníacos</div>
+                </div>
+            </div>
+
+            <!-- Medicação -->
+            <div class="card">
+                <div class="card-title">
+                    <div class="card-icon">💊</div>
+                    Medicação Atual
+                </div>
+                <ul class="medication-list">
+                    <li class="medication-item">
+                        <div class="medication-name">Lítio 300mg</div>
+                        <div>2x ao dia</div>
+                        <span class="status-badge status-attention">Monitorar função renal</span>
+                    </li>
+                    <li class="medication-item">
+                        <div class="medication-name">Quetiapina 200mg</div>
+                        <div>1x à noite</div>
+                        <span class="status-badge status-attention">Possível redução gradual</span>
+                    </li>
+                    <li class="medication-item">
+                        <div class="medication-name">Ácido valpróico 500mg</div>
+                        <div>2x ao dia</div>
+                        <span class="status-badge status-good">Boa adesão</span>
+                    </li>
+                </ul>
+                <div class="info-item">
+                    <div class="info-label">Adesão ao Tratamento (14 dias)</div>
+                    <div class="info-value">Boa adesão conforme monitoramento IA</div>
+                </div>
+            </div>
+
+            <!-- Evolução -->
+            <div class="card">
+                <div class="card-title">
+                    <div class="card-icon">📈</div>
+                    Evolução Clínica
+                </div>
+                <div class="chart-container">
+                    <canvas id="evolutionChart"></canvas>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Tendência (5 dias)</div>
+                    <div class="info-value">Leve melhora do humor, redução do isolamento social e melhora do apetite</div>
+                </div>
+            </div>
+
+            <!-- PTS -->
+            <div class="card">
+                <div class="card-title">
+                    <div class="card-icon">🎯</div>
+                    Plano Terapêutico Singular
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Psicoterapia</div>
+                    <div class="info-value">Cognitivo-comportamental em andamento</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Grupo Terapêutico</div>
+                    <div class="info-value">Psicoeducação sobre bipolaridade agendado</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Suporte Familiar</div>
+                    <div class="info-value">Familiar de referência interessado em participar</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Meta de Estabilização</div>
+                    <div class="info-value">Manter estabilidade para alta programada</div>
+                </div>
+            </div>
+
+            <!-- Equipe Multidisciplinar -->
+            <div class="card">
+                <div class="card-title">
+                    <div class="card-icon">👥</div>
+                    Equipe Multidisciplinar
+                </div>
+                <div class="team-member">
+                    <div class="team-avatar">AM</div>
+                    <div class="team-info">
+                        <h4>Ana (Psicóloga)</h4>
+                        <p>Responsável por entrevista familiar</p>
+                    </div>
+                </div>
+                <div class="team-member">
+                    <div class="team-avatar">DM</div>
+                    <div class="team-info">
+                        <h4>Dr. Marcos (Psiquiatra)</h4>
+                        <p>Acompanhamento de ajustes na medicação</p>
+                    </div>
+                </div>
+                <div class="team-member">
+                    <div class="team-avatar">EN</div>
+                    <div class="team-info">
+                        <h4>Joana (Enfermeira)</h4>
+                        <p>Escala de sono e alimentação</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sugestões da IA -->
+        <div class="card full-width">
+            <div class="card-title">
+                <div class="card-icon">🤖</div>
+                Sugestões da Inteligência Artificial
+            </div>
+            <div class="suggestions">
+                <div class="suggestion-item">
+                    <strong>Medicação:</strong> Reduzir gradualmente a quetiapina caso persistam sinais de sedação excessiva
+                </div>
+                <div class="suggestion-item">
+                    <strong>Rastreio:</strong> Iniciar rastreio para transtorno do sono devido a relatos de hipersonia diurna
+                </div>
+                <div class="suggestion-item">
+                    <strong>Exames:</strong> Recomendar exame de função tireoidiana para descartar fatores hormonais interferentes
+                </div>
+                <div class="suggestion-item">
+                    <strong>Monitoramento:</strong> Atenção especial à função renal devido ao uso prolongado de lítio
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Gráfico de evolução do humor
+        const ctx = document.getElementById('evolutionChart').getContext('2d');
+        const evolutionChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['Dia 1', 'Dia 2', 'Dia 3', 'Dia 4', 'Dia 5', 'Dia 6', 'Dia 7'],
+                datasets: [{
+                    label: 'Humor (0-10)',
+                    data: [3, 3.5, 4, 4.5, 5.5, 6, 6.5],
+                    borderColor: 'rgb(102, 126, 234)',
+                    backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }, {
+                    label: 'Apetite (0-10)',
+                    data: [4, 4.5, 5, 5.5, 6, 7, 7.5],
+                    borderColor: 'rgb(118, 75, 162)',
+                    backgroundColor: 'rgba(118, 75, 162, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }, {
+                    label: 'Socialização (0-10)',
+                    data: [2, 2.5, 3, 4, 5, 5.5, 6],
+                    borderColor: 'rgb(33, 203, 243)',
+                    backgroundColor: 'rgba(33, 203, 243, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    title: {
+                        display: true,
+                        text: 'Evolução Clínica - Últimos 7 dias'
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 10,
+                        title: {
+                            display: true,
+                            text: 'Escala de Avaliação'
+                        }
+                    }
+                }
+            }
+        });
+
+        // Animação de entrada
+        document.addEventListener('DOMContentLoaded', function() {
+            const cards = document.querySelectorAll('.card');
+            cards.forEach((card, index) => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(20px)';
+                setTimeout(() => {
+                    card.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, index * 100);
+            });
+        });
+    </script>
+</body>
+</html>
